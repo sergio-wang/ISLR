@@ -1,0 +1,148 @@
+---
+title: 'Lab: Linear Regression'
+output: html_document
+---
+
+
+
+```{r libraries_table_loading}
+library(MASS)
+library(ISLR)
+
+fix(Boston)
+names(Boston)
+```
+
+## Simple Linear Regression
+
+Here we'll be using the ```lm()``` linear model function to fit a regression of 
+```medv``` (Y) per ```lstat``` (X)
+
+```{r Boston}
+lm.fit = lm(medv~lstat, data=Boston)
+# Or
+attach(Boston)
+lm.fit = lm(medv~lstat)
+```
+
+By using the ```summary()``` function we'll be able to analyze the coefficients
+for the intercept and the slope, indicated by the ```lstat``` line, as well as 
+analyzing the R^2, F-statistic and p-value
+
+```{r lm_summary}
+summary(lm.fit)
+```
+
+By running the ```names()``` function on the object ```lm.fit``` we can see the
+associated attributes.
+```{r fit_names}
+names(lm.fit)
+```
+
+Now, if we're interested in finding the coefficients for the ```lm.fit```, we 
+could either run ```lm.fit$coefficients``` or use the function ```coef()``` on 
+```lm.fit```
+
+```{r coefficients}
+lm.fit$coefficients
+
+coef(lm.fit)
+```
+
+If we wanted to see the confidence interval for the fitted values, we could use
+```confint()``` function
+
+```{r}
+confint(lm.fit)
+```
+
+When running a prediction based on the linear model we previously built, we can 
+predict and also generate a confidence interval for it or prediction interval (
+the latter, a bit wider)
+
+```{r}
+predict(lm.fit, data.frame(lstat=(c(5, 10, 15))), interval="confidence")
+predict(lm.fit, data.frame(lstat=(c(5, 10, 15))), interval="prediction")
+```
+
+```{r}
+plot(lstat, medv)
+abline(lm.fit)
+```
+
+#### Extras on abline
+
+The ```abline(a,b)``` function is a very powerful one. We could use it to plot a 
+line with intercept ```a``` and slope ```b```, or we can plot a vast array of
+different lines given parameters such as ```col```, ```pch```, ```lwd```
+
+```{r}
+plot(lstat, medv)
+abline(lm.fit, lwd=3)
+abline(lm.fit, lwd=3, col='red')
+plot(lstat, medv, col='red')
+plot(lstat, medv, pch=20)
+plot(lstat, medv, pch='+')
+plot(1:20, 1:20, pch=1:20)
+```
+
+### Diagnostic Plots
+
+```{r}
+# Diagnostic plots
+
+# par() will split plots into grid
+
+par(mfrow=c(2,2))
+plot(lm.fit)
+
+plot(predict(lm.fit), residuals(lm.fit))
+plot(predict(lm.fit), rstudent(lm.fit))
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit))
+```
+
+## Multiple Linear Regressions
+
+Using the same ```lm()``` function, we can utilize the syntax ```lm(y~x1+x2+x3)```
+to fit a model with three predictors ```x1```, ```x2```, ```x3```. The summary
+function now will give the regression coefficients for all of them
+
+```{r mlm_summary}
+lm.fit = lm(medv~lstat+age, data=Boston)
+summary(lm.fit)
+```
+
+The ```Boston``` dataset has 13 variables, so to use all of them as predictors 
+we can use the shortcut
+
+```{r}
+lm.fit = lm(medv~., data=Boston)
+summary(lm.fit)
+```
+We can access the individual components of a summary object by using either ```name(summary(lm.fit))```
+or by typing ```?summary.lm```. Hence, ```summary(lm.fit)$r.sq``` gives us the R-squared,
+```summary(lm.fit)$sigma``` gives us the RSE.
+
+The ```car::vif()``` function can be used to compute variance inflation factor.
+
+```{r}
+library(car)
+vif(lm.fit)
+```
+
+Since one variable has a high p-value, we'll run a regression using all predictors
+except for ```age```
+```{r}
+
+lm.fit1 = lm(medv~. - age, data=Boston)
+summary(lm.fit1)
+```
+
+Or as an alternative
+
+```{r}
+lm.fit1=update(lm.fit, ~.-age)
+```
+
+## Interaction Terms
