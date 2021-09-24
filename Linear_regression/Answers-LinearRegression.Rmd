@@ -1,0 +1,15 @@
+---
+title: "Exercises"
+output: html_document
+---
+
+# Exercises - Answers
+## Conceptual
+
+1. 
+The p-values on table 3.4 indicate how confident we are that a given media is 
+related to ```Sales```, therefore by analyzing the p-values indicated one can infer that
+```TV``` and ```Radio```  are more "effective" or "impactful" on ```Sales``` than 
+```Newspaper```
+
+2. Not sure

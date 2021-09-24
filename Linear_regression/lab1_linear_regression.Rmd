@@ -7,10 +7,9 @@ output: html_document
 
 ```{r libraries_table_loading}
 library(MASS)
-library(ISLR)
+library(ISLR2)
 
-fix(Boston)
-names(Boston)
+head(Boston)
 ```
 
 ## Simple Linear Regression
@@ -146,3 +145,101 @@ lm.fit1=update(lm.fit, ~.-age)
 ```
 
 ## Interaction Terms
+
+We can work with interaction between variables. The base syntax for it, inside 
+the ```lm()``` function call is ```lstat:black``` for integration of lstat x black.
+On the other hand, a shortcut would be using ```lstat*black``` which provides
+simultaneously the variables ```lstat```, ```black``` and their product.
+
+```{r}
+summary(lm(medv ~lstat * age, data = Boston))
+```
+
+## Non-linear Transformation of Predictors
+
+If we wanted to include non-linear terms to our regression we can. For instance, 
+we can raise ```X``` to the power ```2``` using ```I(X^2)```, which has to be 
+inside the brackets due to the ```^``` symbol having a different usage inside ```lm()```
+
+```{r}
+lm.fit2 <- lm(medv ~ lstat + I(lstat^2))
+summary(lm.fit2)
+```
+
+The near zero p-value indicates that the quadratic term leads to an improved model.
+By using ```anova()``` we can quantify the extent to which the quadratic fit
+is superior to the linear fit
+
+```{r}
+lm.fit <- lm(medv ~ lstat)
+anova(lm.fit, lm.fit2)
+```
+
+By analysing the results of the hypothesis test, we have clear evidence that the
+model containing the quadratic term is superior, which is not surprising given 
+that analyzing the relationship between ```lstat``` and ```medv``` wasn't linear
+
+```{r}
+par(mfrow = c(2,2))
+plot(lm.fit2)
+```
+
+We could also use a fitted term ```I(X^3)```. But, instead of including them one
+by one, we can use the ```poly()``` function within ```lm()```
+
+```{r}
+lm.fit5 <- lm(medv ~poly(lstat, 5))
+summary(lm.fit5)
+```
+
+The results suggests that adding polynomial terms, up to the fifth order, improves
+the model fit.
+
+By default, the ```poly()``` function orthogonalizes the predictors, which mens that the features output by this function are not simply a sequence of powers of the argument. However, a linear model applied to the output of the ```poly()``` function will have the same fitted values as a linear model applied to the raw polynomials (although the coefficient estimates, std errors and p-values will differ). In order to obtain the raw polynomials the argumento ```raw = TRUE``` must be used.
+
+```{r}
+poly(lstat, 5)[1:5, 1:5]
+poly(lstat, 5, raw=TRUE)[1:5, 1:5]
+```
+
+## Qualitative Predictors
+
+We will examine the ```Carseats``` data, to predict ```Sales``` (child car seat sales) in 400 locations based on a number of predictors
+
+```{r}
+head(Carseats)
+```
+
+If we want to use qualitative predictors such as ```Shelveloc```, when passing
+it as an argument for ```lm()``` it ill generate dummy variables
+
+```{r}
+lm.fit <- lm(Sales ~. + Income:Advertising + Price:Age, data=Carseats)
+summary(lm.fit)
+```
+
+The ```contrasts()``` function returns the coding that ```R``` uses for the dummy variables.
+
+```{r}
+attach(Carseats)
+contrasts(ShelveLoc)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
